@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+
+<html>
+
+   <head>
+      <title>Cокращение URL адреса</title>
+      <link rel="shortcut icon" href="https://cdn.hyperdev.com/us-east-1%3A52a203ff-088b-420f-81be-45bf559d01b1%2Ffavicon.ico" type="image/x-icon"/>
+      <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css">
+      <link href="/public/style.css" rel="stylesheet" type="text/css">
+   </head>
+
+   <body>
+      <div class="container">
+        <h2>Учебный API проект для FreeCodeCamp: Микросервис, сокращающий URL адреса</h2>
+        <h3>Задание: </h3> 
+
+        <ol>
+          <li>Если отправить POST запрос URL-адреса в <code>[project_url]/api/shorturl/new</code> то в ответе получится сокращенный URL-адрес в формате JSON.<br>Например: <code>{"original_url":"www.google.com","short_url":1}</code></li>
+          <li>Если передать недопустимый URL-адрес, который не соответствует формату <code>http(s)://www.example.com(/more/routes)</code>, ответ в формате JSON будет содержать следующую ошибку <code>{"error":"invalid URL"}</code><br>
+          Подсказка: чтобы быть уверенным, что отправленный url-адрес указывает на допустимый сайт, вы можете использовать функцию <code>dns.lookup(host, cb)</code> из основного модуля <code>dns</code>.</li>
+          <li>Когда я посещаю сокращенный URL, он перенаправляет меня на мою исходную ссылку.</li>
+        </ol>
+        
+        <h3>Создание коротких URL-адресов</h3>
+        <p>
+          пример: <code>POST [project_url]/api/shorturl/new</code> - <code>https://www.google.com</code>
+        </p>
+        <form action="api/shorturl/new" method="POST">
+          <label for="url_input">URL будет сокращен</label>
+          <input id="url_input" type="text" name="url" value="https://www.freecodecamp.org">
+          <input type="submit" value="POST URL">
+        </form>
+        <h3>Пример использования:</h3>
+        <a href="https://thread-paper.glitch.me/api/shorturl/3">
+          [this_project_url]/api/shorturl/3
+        </a>
+
+        <h3>Вы будете перенаправлены на:</h3>
+        <p>https://www.freecodecamp.org/forum/</p>
+      </div>
+      <div class="footer">
+        <p>
+          by <a href="https://www.freecodecamp.org">freeCodeCamp</a>
+        </p>
+      </div>
+   </body>
+
+
+</html>
