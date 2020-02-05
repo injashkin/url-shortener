@@ -16,7 +16,7 @@
 
         <ol>
           <li>Если отправить POST запрос URL-адреса в <code>[project_url]/api/shorturl/new</code> то в ответе получится сокращенный URL-адрес в формате JSON.<br>Например: <code>{"original_url":"www.google.com","short_url":1}</code></li>
-          <li>Если передать недопустимый URL-адрес, который не соответствует формату <code>http(s)://www.example.com(/more/routes)</code>, ответ в формате JSON будет содержать следующую ошибку <code>{"error":"invalid URL"}</code><br>
+          <li>Если передать неправильный URL-адрес, который не соответствует формату <code>http(s)://www.example.com(/more/routes)</code>, ответ в формате JSON будет содержать следующую ошибку <code>{"error":"invalid URL"}</code><br>
           Подсказка: чтобы быть уверенным, что отправленный url-адрес указывает на допустимый сайт, вы можете использовать функцию <code>dns.lookup(host, cb)</code> из основного модуля <code>dns</code>.</li>
           <li>Когда я посещаю сокращенный URL, он перенаправляет меня на мою исходную ссылку.</li>
         </ol>
