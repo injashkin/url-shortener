@@ -22,12 +22,7 @@ var port = process.env.PORT || 3000;
 /** this project needs a db !! **/ 
 /** Соединение с базой данных. Параметры подключения 
 читаются из переменной окружения MONGOLAB_URI файла .env **/
-mongoose.connect(process.env.MONGOLAB_URI, function (err) {
-  //Если при соединении с БД происходит ошибка, то выбрасывается исключение, и все дальнейшее исполнение функции прерывается
-  if (err) throw err;
-  //Если соединение с БД выполнено успешно выводится сообщение 'БД подключена'
-  console.log('БД подключена');
-});
+mongoose.connect(process.env.MONGOLAB_URI);
 
 app.use(cors());
 
