@@ -24,9 +24,9 @@
       <ol>
         <li>
           Если на этой странице из нижеприведенной формы отправить POST запрос c
-          URL-адресом, например, <code>www.google.com</code> то в ответе
+          URL-адресом, например, <code>https://www.google.com</code> то в ответе
           получится сокращенный URL-адрес в формате JSON.<br />Например:
-          <code>{"original_url":"www.google.com","short_url":1}</code>
+          <code>{"original_url":"https://www.google.com","short_url":1}</code>
         </li>
         <li>
           Если ввести недопустимый URL-адрес, который не соответствует формату
@@ -45,12 +45,9 @@
 
       <h3>Создание коротких URL-адресов</h3>
       <p>
-        пример:
-        <code
-          >POST
-          [https://url-shortener-injashkin.glitch.me/api/shorturl/new</code
-        >
-        - <code>https://www.google.com</code>
+        В форму ниже введите URL-адрес. Обязательно укажите протокол http:// или
+        https://, иначе будет ошибка. Например:
+        <code>https://www.google.com</code>. А затем нажмите кнопку POST URL.
       </p>
       <form action="api/shorturl/new" method="POST">
         <label for="url_input">URL будет сокращен</label>
@@ -63,6 +60,9 @@
         <input type="submit" value="POST URL" />
       </form>
       <h3>Пример использования:</h3>
+      <p>
+        Если вы введете в адресную строку браузера нижеприведенную ссылку
+      </p>
       <a href="https://url-shortener-injashkin.glitch.me/api/shorturl/3">
         https://url-shortener-injashkin.glitch.me/api/shorturl/3
       </a>
