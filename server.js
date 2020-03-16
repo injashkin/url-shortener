@@ -26,17 +26,26 @@ var port = process.env.PORT || 3000;
 
 /** Соединение с базой данных. Параметры подключения 
 читаются из переменной окружения MONGOLAB_URI файла .env **/
-mongoose.connect(process.env.MONGOLAB_URI);
+mongoose.connect(
+  process.env.MONGOLAB_URI,
+  { useNewUrlParser: true, useUnifiedTopology: true },
+  function(err) {
+    if (err) {
+      console.log("Ошибка подключения к БД \n" + err);
+    } else console.log("БД подключена");
+  }
+);
 
 // Создаем схему списка URL-адресов,
 // каждая запись в списке состоит из url-адреса и
 // его сокращенного варианта shortUrl
 var urlList = new mongoose.Schema({
-  url: { type: String },
+  origUrl: { type: String },
   shortUrl: { type: Number }
 });
+
 //Создаем модель списка из схемы
-const UrlList = mongoose.model("UrlList", urlList);
+var UrlList = mongoose.model("UrlList", urlList);
 
 // Создаем схему счетчика, в котором храним последнее
 // введенное значение count
@@ -44,7 +53,7 @@ var counter = new mongoose.Schema({
   count: { type: Number, default: 1 }
 });
 //Создаем модель счетчика из схемы
-const Counter = mongoose.model("Counter", counter);
+var Counter = mongoose.model("Counter", counter);
 
 app.use(cors());
 
@@ -90,38 +99,68 @@ app.post("/api/shorturl/new", function(req, res) {
 
     // Доменное имя существует
 
-    //Проверим его в нашей базе данных.
-    UrlList.findOne({ url: url }, function(err, storedUrl) {
-      if (err) return;
+    //Проверим URL-адрес в нашей базе данных.
+    UrlList.findOne({ origUrl: url }, function(err, storedUrl) {
+      if (err) return console.error(err);
+      console.log("storedUrl: " + storedUrl);
+
+      //Если в БД URL-адрес отсутствует, то сохраняем его
+      if (!storedUrl) {
+        console.log("storedUrl нет");
+        let init = new UrlList({
+          origUrl: url,
+          shortUrl: getCounterAndIncrement
+        });
+        init.save(err => {
+          if (err) return console.error(err);
+        });
+      }
+      /**
       if (storedUrl) {
         // Если в БД домен с таким именем существует, то выводим в JSON-формате
         // URL-адрес и его сокращенный вариант
         return res.json({ original_url: url, short_url: storedUrl.shortUrl });
-      }
+      }*/
+      console.log("origUrl: " + UrlList.origUrl);
 
       // В БД нет домена с таким именем
-      return res.json({ original_url: url, short_url: storedUrl.shortUrl });
+
       // Увеличиваем счетчик на единицу и записываем в БД URL-адрес
-      Counter.findOneAndUpdate(
-        {},
-        { count: Counter.count++ },        
-        function(err, num) {
-          if (err) return;
-          return res.json({ short: num.count });
-        }
-      );
     });
-/**
+
     res.json([
       { url: url },
       { domainName: domainName },
       { err: err },
       { address: addr },
       { family: family }
-    ]);*/
+    ]);
   });
 });
 
 app.listen(port, function() {
   console.log("Node.js listening ...");
 });
+
+function getCounterAndIncrement() {
+  Counter.findOne({}, function(err, num) {
+    if (err) return console.error(err);
+
+    //Если в БД отсутствует count, то создаем ее
+    if (!num) {
+      let init = new Counter({ count: 1 });
+      init.save(function(err, data) {
+        if (err) return console.error(err);
+        return data.count;
+      });
+    }
+
+    num.count = num.count + 1;
+    Counter.findOneAndUpdate({}, { count: num.count }, { new: true }, function(
+      err,
+      num
+    ) {
+      if (err) return console.error(err);
+    });
+  });
+}
