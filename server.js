@@ -99,68 +99,56 @@ app.post("/api/shorturl/new", function(req, res) {
 
     // Доменное имя существует
 
-    //Проверим URL-адрес в нашей базе данных.
+    //Ищем URL-адрес в нашей базе данных.
     UrlList.findOne({ origUrl: url }, function(err, storedUrl) {
       if (err) return console.error(err);
-      console.log("storedUrl: " + storedUrl);
+      //Ищем счетчик в БД
+      Counter.findOne({}, function(err, num) {
+        if (err) return console.error(err);
 
-      //Если в БД URL-адрес отсутствует, то сохраняем его
-      if (!storedUrl) {
-        console.log("storedUrl нет");
-        let init = new UrlList({
-          origUrl: url,
-          shortUrl: getCounterAndIncrement
-        });
-        init.save(err => {
-          if (err) return console.error(err);
-        });
-      }
-      /**
-      if (storedUrl) {
-        // Если в БД домен с таким именем существует, то выводим в JSON-формате
+        // Если URL-адрес в БД отсутствует
+        if (!storedUrl) {
+          //Если счетчик count в БД отсутствует, то создаем его
+          if (!num) {
+            num = new Counter({ count: 1 });
+            num.save(function(err, data) {
+              if (err) return console.error(err);
+            });
+          } else {
+            // В БД счетчик count присутствует. Увеличиваем ее на 1
+            // и записываем в БД
+            num.count = num.count + 1;
+            num.save(function(err, data) {
+              if (err) return console.error(err);
+            });
+          }
+          //сохраняем в БД URL-адрес и его короткий вариант,
+          //который получаем из счетчика
+          storedUrl = new UrlList({
+            origUrl: url,
+            shortUrl: num.count
+          });
+          storedUrl.save(err => {
+            if (err) return console.error(err);
+          });
+        }
+        // В БД URL-адрес существует. Выводим в JSON-формате
         // URL-адрес и его сокращенный вариант
-        return res.json({ original_url: url, short_url: storedUrl.shortUrl });
-      }*/
-      console.log("origUrl: " + UrlList.origUrl);
-
-      // В БД нет домена с таким именем
-
-      // Увеличиваем счетчик на единицу и записываем в БД URL-адрес
+        res.json({
+          original_url: storedUrl.origUrl,
+          short_url: storedUrl.shortUrl
+        });
+      });
     });
 
-    res.json([
-      { url: url },
-      { domainName: domainName },
-      { err: err },
-      { address: addr },
-      { family: family }
-    ]);
   });
 });
+
+//Обрабатываем GET-запрос, введенный в адресную строку браузера
+app.get("/api/shorturl/:shorturl", function(req, res) {
+  var shorturl = req.params.shorturl;
+})
 
 app.listen(port, function() {
   console.log("Node.js listening ...");
 });
-
-function getCounterAndIncrement() {
-  Counter.findOne({}, function(err, num) {
-    if (err) return console.error(err);
-
-    //Если в БД отсутствует count, то создаем ее
-    if (!num) {
-      let init = new Counter({ count: 1 });
-      init.save(function(err, data) {
-        if (err) return console.error(err);
-        return data.count;
-      });
-    }
-
-    num.count = num.count + 1;
-    Counter.findOneAndUpdate({}, { count: num.count }, { new: true }, function(
-      err,
-      num
-    ) {
-      if (err) return console.error(err);
-    });
-  });
-}
