@@ -29,7 +29,7 @@ var port = process.env.PORT || 3000;
 mongoose.connect(
   process.env.MONGOLAB_URI,
   { useNewUrlParser: true, useUnifiedTopology: true },
-  function(err) {
+  err => {
     if (err) {
       console.log("Ошибка подключения к БД \n" + err);
     } else console.log("БД подключена");
@@ -63,17 +63,17 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use("/public", express.static(process.cwd() + "/public"));
 
-app.get("/", function(req, res) {
+app.get("/", (req, res) => {
   res.sendFile(process.cwd() + "/views/index.html");
 });
 
 // your first API endpoint...
-app.get("/api/hello", function(req, res) {
+app.get("/api/hello", (req, res) => {
   res.json({ greeting: "hello API" });
 });
 
 // Обрабатываем POST-запрос формы из файла /views/index.html
-app.post("/api/shorturl/new", function(req, res) {
+app.post("/api/shorturl/new", (req, res) => {
   // Получаем url-адрес
   var url = req.body.url;
   /** Проверяем соответствие url-адреса формату 
@@ -91,7 +91,7 @@ app.post("/api/shorturl/new", function(req, res) {
   const domainName = urlAndDomainName[1];
 
   // Проверка с помощью сервиса DNS существования доменного имени
-  dns.lookup(domainName, function(err, addr, family) {
+  dns.lookup(domainName, (err, addr, family) => {
     if (err) {
       // Если доменного имени не существует выводится сообщение об ошибке
       return res.json({ error: "Неправильное имя домена" });
@@ -100,10 +100,10 @@ app.post("/api/shorturl/new", function(req, res) {
     // Доменное имя существует
 
     //Ищем URL-адрес в нашей базе данных.
-    UrlList.findOne({ origUrl: url }, function(err, storedUrl) {
+    UrlList.findOne({ origUrl: url }, (err, storedUrl) => {
       if (err) return console.error(err);
       //Ищем счетчик в БД
-      Counter.findOne({}, function(err, num) {
+      Counter.findOne({}, (err, num) => {
         if (err) return console.error(err);
 
         // Если URL-адрес в БД отсутствует
@@ -111,14 +111,14 @@ app.post("/api/shorturl/new", function(req, res) {
           //Если счетчик count в БД отсутствует, то создаем его
           if (!num) {
             num = new Counter({ count: 1 });
-            num.save(function(err, data) {
+            num.save((err, data) => {
               if (err) return console.error(err);
             });
           } else {
             // В БД счетчик count присутствует. Увеличиваем ее на 1
             // и записываем в БД
             num.count = num.count + 1;
-            num.save(function(err, data) {
+            num.save((err, data) => {
               if (err) return console.error(err);
             });
           }
@@ -140,15 +140,28 @@ app.post("/api/shorturl/new", function(req, res) {
         });
       });
     });
-
   });
 });
 
 //Обрабатываем GET-запрос, введенный в адресную строку браузера
-app.get("/api/shorturl/:shorturl", function(req, res) {
+//Запрос должен быть следующим:
+//https://url-shortener-injashkin.glitch.me/api/shorturl/3
+//где, после последнего слеша нужно указать любое число. Если
+//такое число есть в БД, то осуществляется переход по
+//соответствующему адресу.
+app.get("/api/shorturl/:shorturl", (req, res) => {
   var shorturl = req.params.shorturl;
-})
+  //Проверяем на число выражение после последнего слеша
+  if (!shorturl.match(/^[0-9]+$/)) {
+    return res.json({ "ошибка": "Неправильный формат URL адреса" });    
+  }
 
-app.listen(port, function() {
+  UrlList.findOne({ shortUrl: shorturl }, (err, storedUrl) => {
+    if(!storedUrl) {return res.json({"ошибка": "Для данного URL короткого адреса не существует" })}
+    res.redirect(storedUrl.origUrl);
+  });
+});
+
+app.listen(port, () => {
   console.log("Node.js listening ...");
 });
